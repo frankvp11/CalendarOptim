@@ -2,3 +2,4 @@ backend/accountkey.json
 frontend/pages/addTasks.py
 frontend/accountkey.json
 accountkey.json
+frontend/pages/__pycache__/addTasks.cpython-310.pyc

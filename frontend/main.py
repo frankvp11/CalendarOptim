@@ -33,6 +33,7 @@ async def update_events_with_url(url):
 async def main(request: fastapi.requests.Request):
     # Create an HTML container for the FullCalendar
     pages.login.add()
+    ui.open("/login")
     pages.viewCalender.add()
     pages.addTasks.add()
     components.header.add()
