@@ -322,7 +322,7 @@ async def check_database(username:str="Frank"):
 
 
 # @app.post("/determineBestTime")
-def determine_best_time(tasks: list[dict], username="Frank"):
+def determine_best_time(tasks: list[dict],extra_tasks=[],  username="Frank"):
     tasks = [(task["name"], datetime.timedelta(hours=task['duration'])) for task in tasks]
     today = datetime.datetime.now(pytz.timezone('America/Toronto'))
 
@@ -334,6 +334,8 @@ def determine_best_time(tasks: list[dict], username="Frank"):
     events_today = [e for e in user.events if e.start >= start_time and e.start < (today + datetime.timedelta(days=7))]
 
     events = [(e.start.astimezone(pytz.timezone("America/Toronto")), e.end.astimezone(pytz.timezone("America/Toronto"))) for e in events_today]
+    for task in extra_tasks:
+        events.append((parse(task.get("start")).astimezone(pytz.timezone("America/Toronto")), parse(task.get("end")).astimezone(pytz.timezone("America/Toronto"))))
 
     day_start = datetime.datetime.now().replace(hour=5, minute=0).replace(tzinfo=pytz.timezone('America/Toronto'))
     day_end = datetime.datetime.now().replace(hour=22, minute=0).replace(tzinfo=pytz.timezone('America/Toronto'))

@@ -130,7 +130,7 @@ def add():
 
             def add_task():
                 global name, duration
-                stuff = backend.add_task.determine_best_time([{"name":name.value, "duration":float(duration.value)}])
+                stuff = backend.add_task.determine_best_time([{"name":name.value, "duration":float(duration.value)}], updated_tasks_to_add)
                 stuff=  stuff[0].get("best_time")
                 start, end, title = stuff.get("start"), stuff.get("end"), stuff.get("summary")
                 tasks_to_add.append({"title":str(title), "start":str(start), "end":str(end), "color":"red"})
