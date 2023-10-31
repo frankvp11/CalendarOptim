@@ -18,6 +18,35 @@ def add(page) -> None:
             ).props("flat").style("color: white; padding-top: 0.5%; padding-right: -2%;")
     left_drawer.toggle()
     with left_drawer:
+        with ui.element("div").style("margin-top: 20px;"):
+            with ui.link(target="/").style("text-decoration:none"):
+                if page == "Home page":
+                    home_row = (
+                        ui.row()
+                        .style(
+                            "border-radius: 20px; margin-top: 5px; margin-bottom:5px;"
+                        )
+                        .classes("bg-slate-300")
+                    )
+                else:
+                    home_row = (
+                        ui.row()
+                        .style(
+                            "border-radius: 20px; margin-top: 5px; margin-bottom:5px;"
+                        )
+                        .classes("hover:bg-slate-300")
+                    )
+                with home_row:
+                    ui.icon("view_week", size="36px").style(
+                        "margin-left: 10px; text-align:center; display:block; "
+                    )
+                    ui.link(text="Home page", target="/").style(
+                        "text-decoration:none; color:black;  margin-right: 10px; font-size:20px; display:block; margin-top: 1%;"
+                    )
+
+
+
+
         with ui.element("div").style("margin-top: 10px; "):
             with ui.link(target="/stats").style("text-decoration:none; "):
                 if page == "stats":

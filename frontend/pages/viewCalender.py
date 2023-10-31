@@ -4,13 +4,13 @@ import json
 import components.header
 from . import globalState
 
-
+import fastapi
 
 def add():
     @ui.refreshable
     @ui.page("/calendar")
-    def main():
-        components.header.add("calendar")   
+    def main(request: fastapi.requests.Request):
+        components.header.add(request, "calendar")   
 
         ui.element().classes('my-calendar').style("width: 100%; height: 600px;")
         ui.add_head_html('''
@@ -35,6 +35,7 @@ def add():
             </script>
         '''.format(events_json=json.dumps(globalState.events)))
         return 0
-
-    ui.timer(5, main.refresh())
-
+    try:
+        ui.timer(5, main.refresh())
+    except AssertionError:
+        pass

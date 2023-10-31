@@ -6,7 +6,7 @@ cred = firebase_admin.credentials.Certificate('accountkey.json')
 app2 = firebase_admin.initialize_app(cred)
 from .event import Event
 from .stat import Stat
-
+from .notification import Notification
 
 
 
@@ -17,4 +17,5 @@ class User(Model):
 
     events = ListField(NestedModel(Event))
     stats = ListField(NestedModel(Stat))
+    notifications = ListField(NestedModel(Notification))
     joinLink = TextField()

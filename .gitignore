@@ -3,3 +3,6 @@ frontend/accountkey.json
 accountkey.json
 frontend/pages/__pycache__/addTasks.cpython-310.pyc
 __pycache__
+backend/model/__pycache__/event.cpython-310.pyc
+backend/model/__pycache__/stat.cpython-310.pyc
+.gitignore

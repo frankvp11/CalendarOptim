@@ -19,7 +19,9 @@ class GapFinder():
     def get_gaps(self, now, num_days=7):
 
 
-        today = now.date()
+        today = (now + datetime.timedelta(days=1)).date()
+
+        
         events_by_date = {}
         for start, end in self.events:
             if start.date() not in events_by_date:
@@ -29,10 +31,8 @@ class GapFinder():
         for i in range(num_days):
             current_date = today + datetime.timedelta(days=i)
             
-            if current_date == today:
-                gaps = [(max(datetime.time(5, 0), now.time()), datetime.time(22, 0))]
-            else:
-                gaps = [(datetime.time(5, 0), datetime.time(22, 0))]
+            gaps = [(datetime.time(5, 0), datetime.time(22, 0))]
+
             
             day_events = events_by_date.get(current_date, [])
             
@@ -193,8 +193,9 @@ os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "accountkey.json"
 
 
 
-def get_or_create_user_event(username, start, end, summary, existing_events, regular_event=True):
-    user = User.collection.get(username)
+def get_or_create_user_event(user, start, end, summary, existing_events, regular_event=True):
+    # user = User.collection.get(username)
+    print(user)
     event_identifier = f"{start}-{end}-{summary}"
 
     # Check if the event exists in the user's events
@@ -208,35 +209,22 @@ def get_or_create_user_event(username, start, end, summary, existing_events, reg
         
         # Add the new event's identifier to the set
         existing_events.add(event_identifier)
-
+    
     return user, existing_events
 
 
-# from dateutil.rrule import rrule, WEEKLY, MO, TU, WE, TH, FR, SA, SU
-
-# weekdays = {
-#     "MO": MO,
-#     "TU": TU,
-#     "WE": WE,
-#     "TH": TH,
-#     "FR": FR,
-#     "SA": SA,
-#     "SU": SU
-# }
 
 
-# @app.get("/getEvents")
 
 
-async def get_events(url: str, duration: str = "monthly"):
+async def get_events(url: str, username, duration: str = "monthly"):
 
-    start = datetime.datetime.now()
+    
     try:
         response = requests.get(url)
         cal = Calendar.from_ical(response.text)
     except Exception as e:
         raise HTTPException(status_code=400, detail="Failed to fetch and parse the calendar")
-    print(( datetime.datetime.now()-start).total_seconds())
     now = datetime.datetime.now(pytz.timezone('America/Toronto')) - datetime.timedelta(days=30)
     start = datetime.datetime.now()
     end_date = now + datetime.timedelta(days=60)
@@ -261,27 +249,26 @@ async def get_events(url: str, duration: str = "monthly"):
         else:
             if now <= dtstart <= end_date:
                 event_times.append((dtstart, dtend, summary))
-    print((datetime.datetime.now()-start).total_seconds())
     event_times = list(set(event_times))
     event_times.sort(key=lambda x: x[0])
     event_times = [(event1.astimezone(pytz.timezone('America/Toronto')), event2.astimezone(pytz.timezone('America/Toronto')), str(summary)) for (event1, event2, summary) in event_times]
     
 
     start = datetime.datetime.now()
-    user = User.collection.get("Frank")
+    user = User.collection.get(username)
     
     # If user doesn't exist, create one with empty events and stats lists
     if not user:
-        user = User(id="Frank", events=[], stats=[])
-
+        user = User(id=username, events=[], stats=[])
+        user.save()
     # Load all current events into a set for fast lookup
     existing_events = set(f"{ev.start}-{ev.end}-{ev.summary}" for ev in user.events)
 
 
     for start_time, end_time, summary in event_times:
         # Store to database
-        get_or_create_user_event("Frank", start_time, end_time, summary, existing_events, True)
-    print((datetime.datetime.now()-start).total_seconds())
+        get_or_create_user_event(user, start_time, end_time, summary, existing_events, True)
+    user.save()
     return {"event_times": event_times}
 
 
@@ -289,7 +276,7 @@ async def get_events(url: str, duration: str = "monthly"):
 
 
 # @app.get("/checkDatabase")
-async def check_database(username:str="Frank"):
+def check_database(username:str):
     
     today = datetime.datetime.now(pytz.timezone('America/Toronto')).date() - datetime.timedelta(days=35)
     end_date = today + datetime.timedelta(days=70)
@@ -322,11 +309,11 @@ async def check_database(username:str="Frank"):
 
 
 # @app.post("/determineBestTime")
-def determine_best_time(tasks: list[dict],extra_tasks=[],  username="Frank"):
+def determine_best_time(tasks: list[dict], username, extra_tasks=[]):
     tasks = [(task["name"], datetime.timedelta(hours=task['duration'])) for task in tasks]
-    today = datetime.datetime.now(pytz.timezone('America/Toronto'))
+    today = datetime.datetime.now(pytz.timezone('America/Toronto'))  + datetime.timedelta(days=1)
 
-    start_time = today.replace(hour=5, minute=0, second=0, microsecond=0)
+    start_time = today.replace(hour=5, minute=0, second=0, microsecond=0) 
     end_time = today.replace(hour=22, minute=0, second=0, microsecond=0)
 
     # Fetch user and its events
@@ -360,17 +347,3 @@ def determine_best_time(tasks: list[dict],extra_tasks=[],  username="Frank"):
 
 
 
-
-def getStats(username: str="Frank"):
-    
-    user = User.collection.get(username)
-    if not user:
-        return {"error": "User not found"}
-
-    past_regular_events_count = sum(1 for ev in user.events if ev.end.replace(tzinfo=None) < datetime.datetime.now() and ev.start.replace(tzinfo=None) > datetime.datetime.now()-datetime.timedelta(days=30) and ev.regular_event)
-    past_non_regular_events_count = sum(stat.data_point for stat in user.stats)
-
-    return {
-        "past_regular_events": past_regular_events_count,
-        "past_non_regular_events": past_non_regular_events_count
-    }

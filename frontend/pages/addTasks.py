@@ -16,6 +16,8 @@ from . import globalState
 import datetime
 from dateutil.parser import parse
 
+import pages.login
+from fastapi.requests import Request
 
 import sys
 sys.path.append("/home/frankvp11/Documents/CalendarAI/CalendarProj/")
@@ -23,17 +25,55 @@ sys.path.append("/home/frankvp11/Documents/CalendarAI/CalendarProj/backend/")
 
 import backend.add_task
 import backend.save_task
+import backend.send_notification
 import time
+import backend.checkRequest
+import fastapi
+import uuid
 
+def add(request: Request):
 
-
-def add():
-
-
+    username = pages.login.session_info.get(str(request.session.get("id")), {}).get("username")
     tasks_to_add = []
     updated_tasks_to_add = []
+    
+    def share_task(recipients, task_name, duration, username):
+        events_total = [backend.add_task.check_database(user) for user in recipients]
+        events_total.append(backend.add_task.check_database(username)) 
+        events_total = sum([event.get("events3") for event in events_total], [])
+        best_time = backend.add_task.determine_best_time([{"name":task_name, "duration":float(duration)}], username, events_total)[0].get("best_time")
+
+        recipient_usernames = [[user["username"]  for user in pages.login.users if user['email']==recipient.value][0] for recipient in recipients]
+        custom_uuid = str(uuid.uuid4())
+        for recipient_username in recipient_usernames:
+            backend.send_notification.sendNotification(username, recipient_username, task_name, duration, recipient_usernames, custom_uuid, best_time.get("start"), best_time.get("end")) # sender: str, recipient: str, message, duration, start_time=None, finish_time=None
+
+        backend.checkRequest.addRequest(best_time.get("start"), best_time.get("end"), task_name, recipient_usernames, username, custom_uuid)
+        print("Sent request with id ", custom_uuid)
+        ui.notify("Task shared successfully", color="positive")
+
+        
+    def share_task_func():
+        recipients = []
+        card = ui.card().style("width: 100%; height:100%;")
+        with card:
+            ui.label("Share")
+            add_recipient_button = ui.button("Add recipient", on_click=lambda : (render_recipients()))
+            share_button = ui.button("Share with all recipients", on_click=lambda : share_task(recipients, name.value, duration.value, username))
+            def render_recipients():
+                nonlocal recipients
+                nonlocal add_recipient_button, share_button
+                recipients.append(ui.input("Email"))
+                add_recipient_button.delete()
+                share_button.delete()
+                add_recipient_button = ui.button("Add recipient", on_click=lambda : (render_recipients()))
+                share_button = ui.button("Share with all recipients", on_click=lambda : (share_task(recipients, name.value, duration.value, username)))
+            render_recipients()
+
+
+
     @ui.page("/addTasks")
-    def main():
+    def main(request: fastapi.requests.Request):
         ui.add_head_html('''
             <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.9/main.min.css' rel='stylesheet' />
             <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.9/index.global.min.js'></script>
@@ -60,7 +100,7 @@ def add():
 
         global name_input, start_date, end_date, start_time, end_time, name, duration
 
-        components.header.add("addTasks")
+        components.header.add(request, "addTasks")
         with ui.row():
             with ui.column():
                 with ui.row():
@@ -93,7 +133,11 @@ def add():
                         name = ui.input("Task name")
                     with ui.column():
                         duration=  ui.input("Estimated Duration")
+                    with ui.column():
+                        share_task = ui.button("Share Task", on_click=lambda : share_task_func())
+
                 ui.button("Add task", on_click=lambda : add_task())
+
                 # ui.button("Determine the best time for a task", on_click=lambda : determine_best_time())
 
                 ui.button("View updated calendar").on("click", place_card)
@@ -107,7 +151,6 @@ def add():
             @ui.refreshable
             def update_tasks_list():
                 nonlocal tasks_to_add
-                print(tasks_to_add)
                 
                 with ui.column():
                     ui.label("User added tasks")
@@ -130,7 +173,8 @@ def add():
 
             def add_task():
                 global name, duration
-                stuff = backend.add_task.determine_best_time([{"name":name.value, "duration":float(duration.value)}], updated_tasks_to_add)
+                nonlocal username
+                stuff = backend.add_task.determine_best_time([{"name":name.value, "duration":float(duration.value)}], username, updated_tasks_to_add)
                 stuff=  stuff[0].get("best_time")
                 start, end, title = stuff.get("start"), stuff.get("end"), stuff.get("summary")
                 tasks_to_add.append({"title":str(title), "start":str(start), "end":str(end), "color":"red"})
@@ -158,7 +202,7 @@ def add():
         card_element = ui.card().style("position: fixed; left:5%; top: 5%; z-index: 1000; height: 80%; width:1000px;").classes("my-calendar")
         with card_element:
             ui.button("Close", on_click=card_element.delete)
-            ui.button("Save calendar", on_click=lambda : (backend.save_task.add_to_database(tasks_to_add), update_tasks_to_add()))
+            ui.button("Save calendar", on_click=lambda : (backend.save_task.add_to_database(tasks_to_add, pages.login.users_id), update_tasks_to_add()))
         temp_array = globalState.events.copy()
         for  task in updated_tasks_to_add:
 
