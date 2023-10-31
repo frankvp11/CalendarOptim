@@ -12,6 +12,9 @@ sys.path.append("/home/frankvp11/Documents/CalendarAI/CalendarProj/frontend/")
 sys.path.append("/home/frankvp11/Documents/CalendarAI/CalendarProj/")
 # sys.path.append("/home/frankvp11/Documents/CalendarAI/CalendarProj/backend/")
 import pages.globalState
+from send_notification import sendNotification
+import uuid
+
 def addRequest(start, stop, summary: str, people: list, sender, uuid):
     task = TaskStatus()
     task.id = uuid
@@ -99,6 +102,24 @@ def update_persons_calendar(username, start, end, summary):
         
         user.save()
 
+def return_notifications(username, status, custom_uuid): # sender: str, recipient: str, message, duration, recipient_list, uuid, start_time=None, finish_time=None
+    user = User.collection.get(username)
+    if user and user.notifications:
+        # Create a new list excluding the notification with the specified custom_uuid
+        sendee = [notification for notification in user.notifications if notification.id == custom_uuid][0]#.sender
+
+    print("Returning notifications to say that I accepted/rejected")
+    if status == 1:
+        message = f"{username} has accepted your invitation to {sendee.message}"
+    else:
+        message = f"{username} has rejected your invitation to {sendee.message}"
+    
+    sendNotification(username, sendee.sender, message, sendee.duration, [], str(uuid.uuid4()))
+                # sender: str, recipient: str, message, duration, recipient_list, uuid, start_time=None, finish_time=None
+    return
+
+
+
 def updateStatus(custom_uuid, person, status):
 
     # Directly query for the task with the specific ID
@@ -116,23 +137,35 @@ def updateStatus(custom_uuid, person, status):
     if sum(value  for value in task.people_status.values()) == ((len(task.people_status) * 2) -3):
         print("Everyone rejected")
         deleteTaskStatus(custom_uuid)
+        return_notifications(person, status, custom_uuid)
+
         for person in task.people_status.keys():
             deleteTaskRequest(task, person, custom_uuid)
+
         return
     elif (sum(value == 1 for value in task.people_status.values()) == len(task.people_status)-1):
         print("Everyone accepted")
 
+        return_notifications(person,   status, custom_uuid)
 
         for person in task.people_status.keys():
             print("Must update ", person)
             update_persons_calendar(person, task.event.start, task.event.end, task.event.summary)
             deleteTaskRequest(task, person, custom_uuid)
             check_database(person)
+        
         deleteTaskStatus(custom_uuid)
         pages.globalState.events = check_database(person).get("events3")
+
         return
     else:
         task.people_status[person] = status
+
+        return_notifications(person,   status, custom_uuid)
+        deleteTaskRequest(task, person, custom_uuid)
+        ## Send a new notification, to the person so sent the invite, that he/she accepted or rejected
+        ## the invite
+
 
         task.save()
 

@@ -51,7 +51,7 @@ async def main(request: fastapi.requests.Request):
     if not pages.login.is_authenticated(request):
         return fastapi.responses.RedirectResponse("/login")
 
-    value = ui.input("")
-    ui.button("clic", on_click=lambda: backend.checkRequest.updateStatus(value.value, "admin", 2))
+    # value = ui.input("")
+    # ui.button("clic", on_click=lambda: backend.checkRequest.updateStatus(value.value, "admin", 2))
     # ui.button("Click to see who is logged in", on_click=lambda : )
 ui.run(title="Calendar")
