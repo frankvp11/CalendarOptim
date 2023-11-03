@@ -11,8 +11,7 @@ Currently Accomplished:
 To Do:
 1) Make the UI prettier (all pages). 
 2) Fix the button clicking for Logout and notification - should be like the sidebar
-3) Fix the notification message system - have it actually display the message instead of a custom built one (front + backend)
-4) Clear junk from the database (possibly just delete all them re-build it)
-5) Refactor the code - both front and backend
-6) Add some safety catches - specifically for the Notifications database, as it appears when you delete it, all hell breaks loose
-7) Make a video for this app so far
+3) Clear junk from the database (possibly just delete all them re-build it)
+4) Refactor the code - both front and backend
+5) Add some safety catches - specifically for the Notifications database, as it appears when you delete it, all hell breaks loose
+6) Make a video for this app so far

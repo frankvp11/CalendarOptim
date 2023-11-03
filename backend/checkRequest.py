@@ -114,7 +114,7 @@ def return_notifications(username, status, custom_uuid): # sender: str, recipien
     else:
         message = f"{username} has rejected your invitation to {sendee.message}"
     
-    sendNotification(username, sendee.sender, message, sendee.duration, [], str(uuid.uuid4()))
+    sendNotification(username, sendee.sender,  "Accepted invitatoin", sendee.duration, [], str(uuid.uuid4()), summary=message)
                 # sender: str, recipient: str, message, duration, recipient_list, uuid, start_time=None, finish_time=None
     return
 
@@ -132,18 +132,7 @@ def updateStatus(custom_uuid, person, status):
         print("Task not found!")
         return {"error": "Task not found"}
 
-
-    # Update the person's status in the task
-    if sum(value  for value in task.people_status.values()) == ((len(task.people_status) * 2) -3):
-        print("Everyone rejected")
-        deleteTaskStatus(custom_uuid)
-        return_notifications(person, status, custom_uuid)
-
-        for person in task.people_status.keys():
-            deleteTaskRequest(task, person, custom_uuid)
-
-        return
-    elif (sum(value == 1 for value in task.people_status.values()) == len(task.people_status)-1):
+    if (sum(value == 1 for value in task.people_status.values()) == len(task.people_status)-1):
         print("Everyone accepted")
 
         return_notifications(person,   status, custom_uuid)
@@ -155,9 +144,18 @@ def updateStatus(custom_uuid, person, status):
             check_database(person)
         
         deleteTaskStatus(custom_uuid)
-        pages.globalState.events = check_database(person).get("events3")
 
-        return
+        return True
+    # Update the person's status in the task
+    elif sum(value  for value in task.people_status.values()) == ((len(task.people_status) * 2) -3):
+        print("Everyone rejected")
+        deleteTaskStatus(custom_uuid)
+        return_notifications(person, status, custom_uuid)
+
+        for person in task.people_status.keys():
+            deleteTaskRequest(task, person, custom_uuid)
+
+        return False
     else:
         task.people_status[person] = status
 
@@ -169,4 +167,4 @@ def updateStatus(custom_uuid, person, status):
 
         task.save()
 
-    return None
+    return False

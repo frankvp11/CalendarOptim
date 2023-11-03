@@ -11,7 +11,7 @@ import datetime
 
 
 
-def sendNotification(sender: str, recipient: str, message, duration, recipient_list, uuid, start_time=None, finish_time=None):
+def sendNotification(sender: str, recipient: str, message, duration, recipient_list, uuid, start_time=None, finish_time=None, summary=None):
     # Fetch the recipient user
     print("Sending notification to", recipient)
     user = User.collection.get(recipient)
@@ -24,6 +24,10 @@ def sendNotification(sender: str, recipient: str, message, duration, recipient_l
     notif.id = uuid
     notif.sender = sender
     notif.message = message
+    if summary:
+        notif.summary = summary
+    else:   
+        notif.summary = f"{sender} wants to meet with you from {start_time} to {finish_time}. Reason: {message}"
     notif.duration = duration
     notif.start_time = start_time 
     notif.finish_time = finish_time 

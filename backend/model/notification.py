@@ -7,6 +7,7 @@ class Notification(Model):
     id = IDField(include_in_document=True)
     sender = TextField()
     message = TextField()
+    summary = TextField()
     duration = NumberField()
     start_time = DateTime()
     finish_time = DateTime()

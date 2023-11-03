@@ -33,7 +33,6 @@ def temp2():
 
 def open_logout_menu():
     global logout_menu
-    close_menus()
 
     with ui.menu() as menu:
         logout_menu = menu
@@ -58,8 +57,10 @@ def view_calendar_change(start_time, finish_time, summary, noti_id):
         nonlocal start_time, finish_time, summary, start_time2, finish_time2
         global username
 
-        backend.checkRequest.updateStatus(noti_id.get("id"), username, status)
-        # backend.remove_notifications.remove_notification_by_id(username, noti_id) 
+        add_to_cal = backend.checkRequest.updateStatus(noti_id.get("id"), username, status)
+        if add_to_cal:
+             print("Updating Calendar after accepting invitation")
+             pages.globalState.events.append({"title":summary, "start":start_time2, "end":finish_time2})
 
         temp.refresh()
     with card_element:
@@ -86,15 +87,17 @@ def temp(menu):
 
                     start_time = notification.get('start_time')
                     finish_time = notification.get('finish_time')
-                    if start_time and finish_time:
+                    summary = notification.get("summary")
+                    if summary and start_time and finish_time:
                         start_time = notification.get('start_time').strftime('%Y-%m-%d %H:%M')
                         finish_time = notification.get('finish_time').strftime('%Y-%m-%d %H:%M')
 
-                        ui.label(f"You have a new message from {notification.get('sender')}. {notification.get('sender')} would like to meet with you from {start_time} to {finish_time}.").style("font-size: 16px;")
+                        ui.label(summary).style("font-size: 16px;")
                         ui.button("View how this would change your schedule", on_click=lambda x, s_time=start_time, f_time=finish_time, msg=notification.get('message'), nid=notification.get("id"): view_calendar_change(s_time, f_time, msg, notification))
-                        ui.button("Remove notification", on_click=lambda : (backend.checkRequest.updateStatus(notification.get("id"), username, 2), backend.remove_notifications.remove_notification_by_id(username, notification), temp.refresh())) # 
                     else:
-                        ui.label(f"You have a new message from {notification.get('sender')}. {notification.get('sender')} would like to meet with you.").style("font-size: 16px;")
+                        with ui.row():
+                            ui.label(summary).style("font-size: 16px;")
+                            ui.button(icon="delete_forever", on_click=lambda x: (backend.remove_notifications.remove_notification_by_id(username, notification), temp.refresh()))
          
 
 @ui.refreshable
