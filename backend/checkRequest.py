@@ -10,8 +10,7 @@ sys.path.append("..")
 sys.path.append("/home/frankvp11/Documents/CalendarAI/CalendarProj/frontend/")
 # import sys
 sys.path.append("/home/frankvp11/Documents/CalendarAI/CalendarProj/")
-# sys.path.append("/home/frankvp11/Documents/CalendarAI/CalendarProj/backend/")
-import pages.globalState
+
 from send_notification import sendNotification
 import uuid
 
