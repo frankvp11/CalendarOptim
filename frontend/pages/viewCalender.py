@@ -34,8 +34,8 @@ def add():
             }});
             </script>
         '''.format(events_json=json.dumps(globalState.events)))
-        return 0
-    try:
-        ui.timer(5, main.refresh())
-    except AssertionError:
-        pass
+        # return 0
+    # try:
+    #     # ui.timer(5, main.refresh())
+    # except AssertionError:
+    #     pass

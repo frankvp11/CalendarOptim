@@ -136,11 +136,11 @@ def add(request, page: str="main"):
     username = pages.login.session_info.get(str(request.session.get("id")), {}).get("username")
     notifications = backend.get_notifications.getNotifications(username)#.get("notifications")
     amount_of_notifications = len(notifications.get("notifications")) if notifications.get("notifications") else 0
-    left_drawer = sidebar.add(page)
+    # left_drawer = sidebar.add(page)
     with ui.header() as header:
-        ui.button(
-                icon="menu", on_click=lambda: left_drawer.toggle(), color=None
-            ).props("flat").style("color: white; padding-top: 0.5%; padding-right: -2%;")
+        # ui.button(
+        #         icon="menu", on_click=lambda: left_drawer.toggle(), color=None
+        #     ).props("flat").style("color: white; padding-top: 0.5%; padding-right: -2%;")
         ui.label("Calendar AI").style("color: white; font-size: 20px; margin-left: 10px;")
     
         with ui.row().style("position: absolute; right: 5%;"):

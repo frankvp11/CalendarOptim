@@ -1,25 +1,11 @@
-import json
+
+
 from nicegui import ui, app
-import components.sidebar
-import components.header
 
-name_input = None
-start_date = None
-end_date = None
-start_time = None
-end_time = None
-name  = None
-duration = None
-
-from nicegui import ui
-from . import globalState
 import datetime
-from dateutil.parser import parse
-
-import pages.login
-from fastapi.requests import Request
-
+import uuid
 import sys
+
 sys.path.append("/home/frankvp11/Documents/CalendarAI/CalendarProj/")
 sys.path.append("/home/frankvp11/Documents/CalendarAI/CalendarProj/backend/")
 
@@ -27,15 +13,13 @@ import backend.add_task
 import backend.save_task
 import backend.send_notification
 import backend.checkRequest
-import fastapi
-import uuid
+import pages.login
+from dateutil.parser import parse
+import pages.globalState
 
-def add(request: Request):
-
-    username = pages.login.session_info.get(str(request.session.get("id")), {}).get("username")
+def add(username):
     tasks_to_add = []
     updated_tasks_to_add = []
-    
     def share_task(recipients, task_name, duration, username):
         events_total = [backend.add_task.check_database(user) for user in recipients]
         events_total.append(backend.add_task.check_database(username)) 
@@ -51,14 +35,28 @@ def add(request: Request):
         print("Sent request with id ", custom_uuid)
         ui.notify("Task shared successfully", color="positive")
 
-        
+
+    def place_card():
+        card_element = ui.card().style("position: fixed; left:5%; top: 5%; z-index: 1000; height: 80%; width:1000px;").classes("my-calendar3")
+        with card_element:
+            ui.button("Close", on_click=card_element.delete)
+            ui.button("Save calendar", on_click=lambda : (backend.save_task.add_to_database(tasks_to_add, pages.login.users_id), update_tasks_to_add()))
+        temp_array = pages.globalState.events.copy()
+        for task in updated_tasks_to_add:
+                temp_array.append({"title":task.get("title"), "start":task.get("start"), "end":task.get("end"), "color":"red"})
+
+        ui.run_javascript(f'renderFullCalendar("my-calendar3", {temp_array});')
+
+
+
+       
     def share_task_func():
         recipients = []
         card = ui.card().style("width: 100%; height:100%;")
         with card:
             ui.label("Share")
             add_recipient_button = ui.button("Add recipient", on_click=lambda : (render_recipients()))
-            share_button = ui.button("Share with all recipients", on_click=lambda : share_task(recipients, name.value, duration.value, username))
+            share_button = ui.button("Share with all recipients", on_click=lambda x: share_task(recipients, name.value, duration.value, username))
             def render_recipients():
                 nonlocal recipients
                 nonlocal add_recipient_button, share_button
@@ -66,14 +64,11 @@ def add(request: Request):
                 add_recipient_button.delete()
                 share_button.delete()
                 add_recipient_button = ui.button("Add recipient", on_click=lambda : (render_recipients()))
-                share_button = ui.button("Share with all recipients", on_click=lambda : (share_task(recipients, name.value, duration.value, username)))
+                share_button = ui.button("Share with all recipients", on_click=lambda x: (share_task(recipients, name.value, duration.value, username)))
             render_recipients()
 
 
-
-    @ui.page("/addTasks")
-    def main(request: fastapi.requests.Request):
-        ui.add_head_html('''
+    ui.add_head_html('''
             <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.9/main.min.css' rel='stylesheet' />
             <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.9/index.global.min.js'></script>
             <script>
@@ -97,14 +92,13 @@ def add(request: Request):
             </script>
         ''')
 
-        global name_input, start_date, end_date, start_time, end_time, name, duration
 
-        components.header.add(request, "addTasks")
-        with ui.row():
+    with ui.menu().style("width: 100%; height: 100%;"):
+        with ui.row().style("margin-left: 2%;"):
             with ui.column():
                 with ui.row():
-                    ui.label("Add a task")
-                with ui.row():
+                    ui.label("Add a task").style("font-size: 24px;")
+                with ui.row():  
                     name_input = ui.input("Task Name")
                 
                 with ui.row():
@@ -133,14 +127,13 @@ def add(request: Request):
                     with ui.column():
                         duration=  ui.input("Estimated Duration")
                     with ui.column():
-                        share_task = ui.button("Share Task", on_click=lambda : share_task_func())
+                        ui.button("Share Task", on_click=lambda : share_task_func())
 
                 ui.button("Add task", on_click=lambda : add_task())
 
-                # ui.button("Determine the best time for a task", on_click=lambda : determine_best_time())
 
                 ui.button("View updated calendar").on("click", place_card)
-            
+                
             def handle_change(e, index):
                 if e.value == True:
                     updated_tasks_to_add.append(tasks_to_add[index])
@@ -171,8 +164,7 @@ def add(request: Request):
     
 
             def add_task():
-                global name, duration
-                nonlocal username
+                nonlocal name, duration
                 stuff = backend.add_task.determine_best_time([{"name":name.value, "duration":float(duration.value)}], username, updated_tasks_to_add)
                 stuff=  stuff[0].get("best_time")
                 start, end, title = stuff.get("start"), stuff.get("end"), stuff.get("summary")
@@ -183,7 +175,7 @@ def add(request: Request):
                 update_tasks_list.refresh()
 
         def add_event():
-                global name_input, start_date, end_date
+                nonlocal name_input, start_date, end_date
                 nonlocal tasks_to_add
                 start_datetime, end_datetime = determine_date()
 
@@ -197,19 +189,6 @@ def add(request: Request):
                 update_tasks_list.refresh()
 
 
-    def place_card():
-        card_element = ui.card().style("position: fixed; left:5%; top: 5%; z-index: 1000; height: 80%; width:1000px;").classes("my-calendar")
-        with card_element:
-            ui.button("Close", on_click=card_element.delete)
-            ui.button("Save calendar", on_click=lambda : (backend.save_task.add_to_database(tasks_to_add, pages.login.users_id), update_tasks_to_add()))
-        temp_array = globalState.events.copy()
-        for  task in updated_tasks_to_add:
-
-                temp_array.append({"title":task.get("title"), "start":task.get("start"), "end":task.get("end"), "color":"red"})
-
-        ui.run_javascript(f'renderFullCalendar("my-calendar", {temp_array});')
-
-
 
 
 
@@ -220,15 +199,15 @@ def add(request: Request):
 
                 tasks_to_add2.append({"title":task.get("title"), "start":task.get("start"), "end":task.get("end")})
             # print("Hello frank!")
-        globalState.events.extend(tasks_to_add2)
+        pages.globalState.events.extend(tasks_to_add2)
         print("Done updating the tasks to add, along with the global stats")
         tasks_to_add = []
-        ui.run_javascript(f'renderFullCalendar("my-calendar", {globalState.events});')
+        ui.run_javascript(f'renderFullCalendar("my-calendar", {pages.globalState.events});')
         
 
 
     def determine_date():
-        global name_input, start_date, end_date, start_date, end_date
+        nonlocal name_input, start_date, end_date, start_date, end_date
 
         try:
             start_date_object = parse(start_date.value).date()
@@ -253,6 +232,5 @@ def add(request: Request):
         start_datetime = datetime.datetime.combine(start_date_object, start_time_object)
         end_datetime = datetime.datetime.combine(end_date_object, end_time_object)
         return start_datetime, end_datetime
-
 
 
