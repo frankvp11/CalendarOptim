@@ -138,6 +138,7 @@ def updateStatus(custom_uuid, person, status):
 
         for person in task.people_status.keys():
             print("Must update ", person)
+            print(task.event.start, task.event.end, task.event.summary)
             update_persons_calendar(person, task.event.start, task.event.end, task.event.summary)
             deleteTaskRequest(task, person, custom_uuid)
             check_database(person)

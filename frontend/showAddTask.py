@@ -17,220 +17,160 @@ import pages.login
 from dateutil.parser import parse
 import pages.globalState
 
+
+def share_task(recipients, task_name, username):
+    print("Sharing task")
+    for person in recipients:
+         print(person.value)
+    print(task_name, username)
+    return None
+
+
 def add(username):
-    tasks_to_add = []
-    updated_tasks_to_add = []
-    def share_task(recipients, task_name, duration, username):
-        events_total = [backend.add_task.check_database(user) for user in recipients]
-        events_total.append(backend.add_task.check_database(username)) 
-        events_total = sum([event.get("events3") for event in events_total], [])
-        best_time = backend.add_task.determine_best_time([{"name":task_name, "duration":float(duration)}], username, events_total)[0].get("best_time")
-
-        recipient_usernames = [[user["username"]  for user in pages.login.users if user['email']==recipient.value][0] for recipient in recipients]
-        custom_uuid = str(uuid.uuid4())
-        for recipient_username in recipient_usernames:
-            backend.send_notification.sendNotification(username, recipient_username, task_name, duration, recipient_usernames, custom_uuid, best_time.get("start"), best_time.get("end")) # sender: str, recipient: str, message, duration, start_time=None, finish_time=None
-
-        backend.checkRequest.addRequest(best_time.get("start"), best_time.get("end"), task_name, recipient_usernames, username, custom_uuid)
-        print("Sent request with id ", custom_uuid)
-        ui.notify("Task shared successfully", color="positive")
-
-
-    def place_card():
-        card_element = ui.card().style("position: fixed; left:5%; top: 5%; z-index: 1000; height: 80%; width:1000px;").classes("my-calendar3")
-        with card_element:
-            ui.button("Close", on_click=card_element.delete)
-            ui.button("Save calendar", on_click=lambda : (backend.save_task.add_to_database(tasks_to_add, pages.login.users_id), update_tasks_to_add()))
-        temp_array = pages.globalState.events.copy()
-        for task in updated_tasks_to_add:
-                temp_array.append({"title":task.get("title"), "start":task.get("start"), "end":task.get("end"), "color":"red"})
-
-        ui.run_javascript(f'renderFullCalendar("my-calendar3", {temp_array});')
-
-
-
-       
-    def share_task_func():
-        recipients = []
-        card = ui.card().style("width: 100%; height:100%;")
-        with card:
-            ui.label("Share")
-            add_recipient_button = ui.button("Add recipient", on_click=lambda : (render_recipients()))
-            share_button = ui.button("Share with all recipients", on_click=lambda x: share_task(recipients, name.value, duration.value, username))
-            def render_recipients():
-                nonlocal recipients
-                nonlocal add_recipient_button, share_button
-                recipients.append(ui.input("Email"))
-                add_recipient_button.delete()
-                share_button.delete()
-                add_recipient_button = ui.button("Add recipient", on_click=lambda : (render_recipients()))
-                share_button = ui.button("Share with all recipients", on_click=lambda x: (share_task(recipients, name.value, duration.value, username)))
-            render_recipients()
-
-
-    ui.add_head_html('''
-            <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.9/main.min.css' rel='stylesheet' />
-            <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.9/index.global.min.js'></script>
-            <script>
-                function renderFullCalendar(elementId, events) {
-                    var calendarEl = document.querySelector('.' + elementId);
-                    
-                    if (calendarEl) {
-                        window.calendarInstance = new FullCalendar.Calendar(calendarEl, {
-                            initialView: 'timeGridWeek',
-                            slotMinTime: "05:00:00",
-                            slotMaxTime: "22:00:00",
-                            allDaySlot: false,
-                            timeZone: 'local',
-                            height: 'auto',
-                            events: events
-                        });
-                        
-                        window.calendarInstance.render();
-                    }
-                }
-            </script>
-        ''')
-
-
+    temp_array = pages.globalState.events
+    total_tasks = []
+    check_box_values= []
+    task_input_been_created = False
     with ui.menu().style("width: 100%; height: 100%;"):
-        with ui.row().style("margin-left: 2%;"):
-            with ui.column():
-                with ui.row():
-                    ui.label("Add a task").style("font-size: 24px;")
-                with ui.row():  
-                    name_input = ui.input("Task Name")
-                
-                with ui.row():
-                    with ui.column():
-                        ui.label("Start Date")
-                        start_date = ui.date(value=datetime.datetime.today())
-                    with ui.column():
-                        ui.label("Start Time")
-                        start_time = ui.time(value="12:00")
-                
-                # Create another row for the end date and time
-                    with ui.column():
-                        ui.label("End Date")
-                        end_date = ui.date(value=datetime.datetime.today())
-                    with ui.column():
-                        ui.label("End Time")
-                        end_time = ui.time(value="12:00")
+        with ui.row().style("width: 100%; height: 100%;"):
+            with ui.column().style("width: 60%; height: 100%; position: absolute; left: 0%; margin-right: 2%; margin-left: 2%;"):
+                        ui.element().classes('my-calendar-addtasks').style("width: 100%; height: 600px;")
 
-                ui.button("Add a task", on_click=lambda : add_event())
+            def place_calendar_element():
+                        ui.run_javascript(f'renderFullCalendar("my-calendar-addtasks", {temp_array});')
+            
+            with ui.column().style("position: absolute; right: 10%; width: 20%; height: 100%;"):
+                with ui.row().style("display:flex"):
+                    with ui.column().style("width: 50%; height: 100%; flex: 1;"):
+                        #Requests a task name
+                        task_name_input= None
+                        start_date = None
+                        end_date = None
+                        @ui.refreshable
+                        def add_task():
+                            nonlocal task_name_input, start_date, end_date, task_input_been_created
+                            if task_name_input and start_date and end_date:
+                                
+                                total_tasks.append({"title": task_name_input.value, "start": start_date, "end": end_date, "color":"red"})
+                                print(total_tasks)
+                                temp_array.append({"title": task_name_input.value, "start": start_date, "end": end_date, "color":"red"})
+                                place_calendar_element()
+                                update_task_list.refresh()
+                                task_name_input.value = ""
 
-                with ui.row():
-                    ui.label("Determine the Best Time to do a task")
-                with ui.row():
-                    with ui.column():
-                        name = ui.input("Task name")
-                    with ui.column():
-                        duration=  ui.input("Estimated Duration")
-                    with ui.column():
-                        ui.button("Share Task", on_click=lambda : share_task_func())
-
-                ui.button("Add task", on_click=lambda : add_task())
-
-
-                ui.button("View updated calendar").on("click", place_card)
-                
-            def handle_change(e, index):
-                if e.value == True:
-                    updated_tasks_to_add.append(tasks_to_add[index])
-                else:
-                    updated_tasks_to_add.remove(tasks_to_add[index])
-
-            @ui.refreshable
-            def update_tasks_list():
-                nonlocal tasks_to_add
-                
-                with ui.column():
-                    ui.label("User added tasks")
-                    all_tasks = tasks_to_add   # Combine both lists
-
-                    for index, task in enumerate(all_tasks):
-                        with ui.row():
-                            # Label
-                            with ui.column():
-                                if 'title' in task:
-                                    ui.label(task.get("title")).style("font-size: 20px; width: 100px;")
-                                else:
-                                    ui.label(task.get("name")).style("font-size: 20px; width: 100px;")
+                            elif not task_input_been_created:
+                                task_name_input = ui.input("Task name").style("top:0%;")
+                                task_input_been_created = True
+                            else:
+                                 ui.notify("Missing fields  ", color="negative")
                             
-                            with ui.column():
-                                ui.checkbox("Include", value=(task in updated_tasks_to_add), on_change=lambda e, i=index : handle_change(e, i)).style("margin-top: -5%;")
-
-            update_tasks_list()
-    
-
-            def add_task():
-                nonlocal name, duration
-                stuff = backend.add_task.determine_best_time([{"name":name.value, "duration":float(duration.value)}], username, updated_tasks_to_add)
-                stuff=  stuff[0].get("best_time")
-                start, end, title = stuff.get("start"), stuff.get("end"), stuff.get("summary")
-                tasks_to_add.append({"title":str(title), "start":str(start), "end":str(end), "color":"red"})
-                updated_tasks_to_add.append({"title":str(title), "start":str(start), "end":str(end), "color":"red"})
-                name.value = ""
-                duration.value = ""
-                update_tasks_list.refresh()
-
-        def add_event():
-                nonlocal name_input, start_date, end_date
-                nonlocal tasks_to_add
-                start_datetime, end_datetime = determine_date()
-
-                # Try to parse start and end dates, if it's already a date object it'll just pass
-                tasks_to_add.append({"title":str(name_input.value), "start":str(start_datetime), "end":str(end_datetime), "color":"red"})
-                updated_tasks_to_add.append({"title":str(name_input.value), "start":str(start_datetime), "end":str(end_datetime), "color":"red"})
-                name_input.value = ""
-                start_date.value = datetime.datetime.today()
-                end_date.value = datetime.datetime.today()
-
-                update_tasks_list.refresh()
+                        add_task()
 
 
+                        # if task name input exists, we can then ask them to share, add a time, or determine best time
+                        
+                        ui.button("Share event", on_click=lambda x : share_event())
 
+                        ui.button("Choose time", on_click=lambda x : choose_time())
+                        ui.button("Determine best time ", on_click=lambda x : determine_time())
+                        ui.button("Add Task", on_click=lambda x : (add_task()))
 
+                        def share_event():
+                            recipients = []
+                            card = ui.card().style("width: 100%; height: 100%; z-index: 1000; position: fixed; left: 10%; top: 10%;")
+                            with card:
+                                ui.label("Share")
+                                add_recipient_button = ui.button("Add recipient", on_click=lambda : (render_recipients()))
+                                share_button = ui.button("Share with all recipients", on_click=lambda x: share_task(recipients, task_name_input.value, username))
+                                def render_recipients():
+                                    nonlocal recipients
+                                    nonlocal add_recipient_button, share_button, close_button
+                                    recipients.append(ui.input("Email"))
+                                    add_recipient_button.delete()
+                                    share_button.delete()
+                                    close_button.delete()
+                                    add_recipient_button = ui.button("Add recipient", on_click=lambda : (render_recipients()))
+                                    share_button = ui.button("Share with all recipients", on_click=lambda x: (share_task(recipients, task_name_input.value, username)))
+                                    close_button = ui.button("Close", on_click=lambda x: card.delete())
+                                close_button = ui.button("Close", on_click=lambda x: card.delete())
+                        
+                        
+                        def determine_time():
+                            return None
+                        
 
-    def update_tasks_to_add():
-        nonlocal tasks_to_add #, checkbox_column
-        tasks_to_add2 = []
-        for i, task in enumerate(updated_tasks_to_add):
+                        def choose_time():
+                            card = ui.card().style("width: 100%; height: 100%; z-index: 1000; position: fixed; left: 10%; top: 10%;")
+                            with card:
+                                with ui.row():
+                                    with ui.column():
+                                        ui.label("Start Date")
+                                        start_date_input = ui.date(value=datetime.datetime.today())
+                                    with ui.column():
+                                        ui.label("Start Time")#.style("position: absolute; right: 2%; top: 5%;")
+                                        start_time = ui.time(value="12:00")#.style("position: absolute; right: 2%; top: 8%;")
+                                    
+                                    # Create another row for the end date and time
+                                with ui.row():
+                                    with ui.column():
+                                        ui.label("End Date")#.style("position: absolute; right: 2%; top: 12%;")
+                                        end_date_input = ui.date(value=datetime.datetime.today())#.style("position: absolute; right: 2%; top: 20%;")
+                                    with ui.column():
+                                        ui.label("End Time")#.style("position: absolute; right: 2%; top: 30%;")
+                                        end_time = ui.time(value="12:00")#.style("position: absolute; right: 2%; top: 45%;")
+                                def save_user_made_date():
+                                    nonlocal start_date, end_date, start_time, end_time, start_date_input, end_date_input
+                                    card.delete()
+                                    
+                                    if not isinstance(start_date_input.value, datetime.datetime):
+                                        start_day = parse(start_date_input.value)
+                                    else:
+                                        start_day = start_date_input.value
+                                    if not isinstance(end_date_input.value, datetime.datetime):
+                                        end_day = parse(end_date_input.value)
+                                    else:
+                                            end_day = end_date_input.value
 
-                tasks_to_add2.append({"title":task.get("title"), "start":task.get("start"), "end":task.get("end")})
-            # print("Hello frank!")
-        pages.globalState.events.extend(tasks_to_add2)
-        print("Done updating the tasks to add, along with the global stats")
-        tasks_to_add = []
-        ui.run_javascript(f'renderFullCalendar("my-calendar", {pages.globalState.events});')
+                                    if not isinstance(start_time, datetime.datetime):
+                                        start_time = parse(start_time.value)
+                                    else:
+                                        start_time = start_time.value
+
+                                    if not isinstance(end_time, datetime.datetime):
+                                        end_time = parse(end_time.value)
+                                    else:
+                                        end_time = end_time.value
+                                    end_date = datetime.datetime.combine(end_day, end_time.time())
+                                    start_date = datetime.datetime.combine(start_day, start_time.time())
+
+                                ui.button("Save", on_click=lambda x: save_user_made_date())
+
+                        
+                        ui.button("View updated calendar", on_click=lambda x: place_calendar_element())#.style("position: absolute; right: 2%; bottom: 10%;")
+
+                    with ui.column().style("width: 50%; height: 100%; flex:1; margin-top: 2%;"):
+                        ui.label("Your tasks")
+
+                        @ui.refreshable
+                        def update_task_list():
+                                with ui.column():
+                                    total_tasks   
+
+                                    for index, task in enumerate(total_tasks):
+                                        with ui.row():
+                                            # 
+                                            with ui.column():
+                                                if task.get("title"):
+                                                    ui.label(task.get("title")).style("font-size: 20px; width: 100px;")
+                                                else:
+                                                    ui.label(task).style("font-size: 20px; width: 100px;")
+                                            
+                                            with ui.column():
+                                                if index < len(check_box_values):
+                                                     ui.checkbox("Include", value=check_box_values[index].value)
+                                                else:
+                                                     check_box_values.append(ui.checkbox("Include", value=True))
+
+                        update_task_list()
+
         
-
-
-    def determine_date():
-        nonlocal name_input, start_date, end_date, start_date, end_date
-
-        try:
-            start_date_object = parse(start_date.value).date()
-        except (TypeError, ValueError):
-            start_date_object = start_date.value
-
-        try:
-            end_date_object = parse(end_date.value).date()
-        except (TypeError, ValueError):
-            end_date_object = end_date.value
-
-        try:
-            start_time_object = parse(start_time.value).time()
-        except (TypeError, ValueError):
-            start_time_object = start_time.value
-
-        try:
-            end_time_object = parse(end_time.value).time()
-        except (TypeError, ValueError):
-            end_time_object = end_time.value
-
-        start_datetime = datetime.datetime.combine(start_date_object, start_time_object)
-        end_datetime = datetime.datetime.combine(end_date_object, end_time_object)
-        return start_datetime, end_datetime
-
-

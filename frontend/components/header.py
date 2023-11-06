@@ -67,11 +67,11 @@ def view_calendar_change(start_time, finish_time, summary, noti_id):
             ui.button("Close", on_click=card_element.delete)
             ui.button("Accept invitation", on_click=lambda : (run_updates(noti_id, 1)))
             ui.button("Reject invitation", on_click=lambda : (run_updates(noti_id, 2)))
-    temp_array = pages.globalState.events.copy()
+    # temp_array = pages.globalState.events.copy()
 
-    temp_array.append({"title":summary, "start":start_time2, "end":finish_time2, "color":"red"})
+    # temp_array.append({"title":summary, "start":start_time2, "end":finish_time2, "color":"red"})
 
-    ui.run_javascript(f'renderFullCalendar("my-calendar", {temp_array});')
+    # ui.run_javascript(f'renderFullCalendar("my-calendar", {temp_array});')
 
 
 @ui.refreshable

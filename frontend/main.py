@@ -7,11 +7,12 @@ import pages.login
 # import pages.addTasks
 import json
 import pages.globalState
-import showAddTask
+import showAddTask2
 import viewStats
 
 import fastapi
-
+import datetime
+from dateutil.parser import parse
 
 import sys
 sys.path.append("..")
@@ -26,8 +27,6 @@ async def update_events_with_url(url):
     new_events = [{"title": str(title), "start": str(start), "end": str(end)} for start, end, title in events]
 
     pages.globalState.events.extend(new_events)
-
-
 
 
 
@@ -75,7 +74,7 @@ async def main(request: fastapi.requests.Request):
                 '''.format(events_json=json.dumps(pages.globalState.events)))
         with ui.column():
             with ui.row():
-                ui.button("Add Task", on_click=lambda x: showAddTask.add(username=pages.login.users_id))
+                ui.button("Add Task", on_click=lambda x: showAddTask2.add(username=pages.login.users_id))
             with ui.row():
                 ui.button("View Stats", on_click=lambda x: viewStats.add(username=pages.login.users_id))
 

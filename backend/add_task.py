@@ -292,8 +292,8 @@ def check_database(username:str):
     # Format the events
     formatted_events = []
     for e in events_in_range:
-        start_dt = e.start.astimezone(  pytz.timezone('America/Toronto'))
-        end_dt = e.end.astimezone(  pytz.timezone('America/Toronto'))
+        start_dt = e.start.astimezone(  pytz.timezone('America/Toronto')) + datetime.timedelta(hours=1)
+        end_dt = e.end.astimezone(  pytz.timezone('America/Toronto')) + datetime.timedelta(hours=1)
 
         formatted_events.append({
             "title": str(e.summary),
