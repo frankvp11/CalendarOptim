@@ -28,10 +28,9 @@ def close_menus():
         logout_menu = None
     if notification_menu:
         notification_menu = None
-
-def temp2():
-    ui.open("/logout")
-    return fastapi.responses.RedirectResponse("/logout")
+import pages.user
+async def temp2():
+    await pages.user.logout()
 
 def open_logout_menu():
     global logout_menu
@@ -116,7 +115,7 @@ def open_notification_menu():
     with ui.menu().style("width: 40%; height: 30%;") as menu:
         temp(menu)
 
-def add(request, page: str="main"):
+def add(page: str="main"):
     ui.add_head_html('''
             <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.9/main.min.css' rel='stylesheet' />
             <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.9/index.global.min.js'></script>
@@ -142,7 +141,8 @@ def add(request, page: str="main"):
     ''')
 
     global username, notification_button
-    username = pages.login.session_info.get(str(request.session.get("id")), {}).get("username")
+    # username = pages.login.session_info.get(str(request.session.get("id")), {}).get("username")
+    username = "frank"
     notifications = backend.get_notifications.getNotifications(username)#.get("notifications")
     amount_of_notifications = len(notifications.get("notifications")) if notifications.get("notifications") else 0
     # left_drawer = sidebar.add(page)

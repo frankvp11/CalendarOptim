@@ -47,12 +47,12 @@ def share_event():
         @ui.refreshable
         def inside_func():
             global share_username, share_with_people, check_box_values
-            print(check_box_values)
+            # print(check_box_values)
 
             with ui.row():
                 with ui.column().style("width: 25%; margin-top: 2%; margin-left: 2%;"):
                     ui.label("Add User's Email").style("font-size: 1.5vw")
-                    if share_username is not None:
+                    if share_username is not None and share_username.value != '':
                         share_with_people.append(share_username.value)
                         share_username = ui.input("Email")
                     else:
@@ -61,6 +61,8 @@ def share_event():
                     ui.button("Add Person", on_click=lambda : inside_func.refresh()).style("font-size: 1vw;")
     
                 with ui.column().style("width: 40%; margin-top: 2%; margin-right: 2%;"):
+                    print("Share with people", share_with_people)
+                    print("Checboxes"   , check_box_values)
                     for index, person in enumerate(share_with_people):
                         with ui.row().style("width: 100%;"):
                             with ui.column().style("width: 40%; margin-right: 2%"):

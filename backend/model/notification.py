@@ -12,3 +12,5 @@ class Notification(Model):
     start_time = DateTime()
     finish_time = DateTime()
     people = MapField()
+
+#users = [{"username": "frank", "password":"password123", "email":"frankvanpaassen3@gmail.com"},{"username": "admin", "password":"admin", "email":"admin@gmail.com"}, {"username": "user", "password":"user", "email":"frankvanpaassen2@gmail.com"}]
