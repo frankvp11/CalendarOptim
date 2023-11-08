@@ -18,6 +18,7 @@ import backend.checkRequest
 logout_menu = None
 notification_menu = None
 username = None
+notification_button = None
 import pages.login
 import main
 
@@ -56,13 +57,16 @@ def view_calendar_change(start_time, finish_time, summary, noti_id):
 
     def run_updates(noti_id, status):
         nonlocal start_time, finish_time, summary, start_time2, finish_time2
-        global username
+        global username, notification_button
 
         add_to_cal = backend.checkRequest.updateStatus(noti_id.get("id"), username, status)
         if add_to_cal:
              print("Updating Calendar after accepting invitation")
              pages.globalState.events.append({"title":summary, "start":start_time2, "end":finish_time2})
-
+        print("notification button text", notification_button.text)
+        if notification_button.text:
+            notification_button.text = str(int(notification_button.text) - 1)
+        
         temp.refresh()
         main.update_calendar()
         main.main.refresh()
@@ -71,6 +75,12 @@ def view_calendar_change(start_time, finish_time, summary, noti_id):
             ui.button("Close", on_click=card_element.delete)
             ui.button("Accept invitation", on_click=lambda : (run_updates(noti_id, 1)))
             ui.button("Reject invitation", on_click=lambda : (run_updates(noti_id, 2)))
+def update_notification_menu(username, notification):
+     global notification_menu, notification_button
+     backend.remove_notifications.remove_notification_by_id(username, notification)
+     temp.refresh()
+     if notification_button.text:
+        notification_button.text = str(int(notification_button.text) - 1)
 
 
 @ui.refreshable
@@ -96,7 +106,7 @@ def temp(menu):
                     else:
                         with ui.row():
                             ui.label(summary).style("font-size: 16px;")
-                            ui.button(icon="delete_forever", on_click=lambda x: (backend.remove_notifications.remove_notification_by_id(username, notification), temp.refresh()))
+                            ui.button(icon="delete_forever", on_click=lambda x: (update_notification_menu(username, notification)))
          
 
 @ui.refreshable
@@ -131,7 +141,7 @@ def add(request, page: str="main"):
             </script>
     ''')
 
-    global username
+    global username, notification_button
     username = pages.login.session_info.get(str(request.session.get("id")), {}).get("username")
     notifications = backend.get_notifications.getNotifications(username)#.get("notifications")
     amount_of_notifications = len(notifications.get("notifications")) if notifications.get("notifications") else 0
@@ -143,7 +153,7 @@ def add(request, page: str="main"):
         ui.label("Calendar AI").style("color: white; font-size: 20px; margin-left: 10px;")
     
         with ui.row().style("position: absolute; right: 5%;"):
-            ui.button(icon="notifications", text=amount_of_notifications, on_click=lambda x : open_notification_menu()).style("color: red;")
+            notification_button = ui.button(icon="notifications", text=amount_of_notifications, on_click=lambda x : open_notification_menu()).style("color: red;")
              
         with ui.row().style("position: absolute; right: 2%;"):
                         ui.button(icon="account_circle", color=None).on(
