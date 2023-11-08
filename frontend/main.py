@@ -1,7 +1,8 @@
-from nicegui import ui, app
+from nicegui import ui, app, client
 import components.sidebar
 import components.header
 import pages.login
+
 # import pages.stats
 # import pages.viewCalender
 # import pages.addTasks
@@ -29,21 +30,24 @@ async def update_events_with_url(url):
     pages.globalState.events.extend(new_events)
 
 
+def update_calendar():
+        print("Updating Calendar!")
+        stuff=  backend.add_task.check_database(pages.login.users_id)
+                
+        stuff = stuff.get("events3")
+        pages.globalState.events = stuff
+        ui.run_javascript(f'renderFullCalendar("my-calendar", {pages.globalState.events});')
 
+@ui.refreshable
 @ui.page("/")
-async def main(request: fastapi.requests.Request):
+async def main(request: fastapi.requests.Request, client: client.Client):
     # Create an HTML container for the FullCalendar
     pages.login.add()
     ui.open("/login")
 
     components.header.add(request)
 
-    stuff=  backend.add_task.check_database(pages.login.users_id)
-            
-    stuff = stuff.get("events3")
-    pages.globalState.events = stuff
-
-    
+    client.on_connect(update_calendar)
     # url_input = ui.input("URL")
     # ui.button("Open", on_click=lambda: update_events_with_url(url_input.value))
     if not pages.login.is_authenticated(request):

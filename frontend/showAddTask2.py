@@ -11,6 +11,8 @@ import backend.checkRequest
 import pages.login
 import uuid
 import fastapi
+import main
+
 
 start_date = None
 end_date = None
@@ -129,28 +131,7 @@ def determine_time(username):
     print(best_time)
     start_date, end_date = best_time.get("start"), best_time.get("end")
 
-    # recipient_usernames = [[user["username"]  for user in pages.login.users if user['email']==recipient][0] for recipient in list_of_people]
-    # custom_uuid = str(uuid.uuid4())
-    # for recipient_username in recipient_usernames:
-    #     backend.send_notification.sendNotification(username, recipient_username, task_name.value, task_duration.value, recipient_usernames, custom_uuid, best_time.get("start"), best_time.get("end")) # sender: str, recipient: str, message, duration, start_time=None, finish_time=None
-    # backend.checkRequest.addRequest(best_time.get("start"), best_time.get("end"), task_name.value, recipient_usernames, username, custom_uuid)
-    # print("Sent request with id ", custom_uuid)
-    # ui.notify("Task shared successfully", color="positive")
-    
-    # def share_task(recipients, task_name, duration, username):
-    #     events_total = [backend.add_task.check_database(user) for user in recipients]
-    #     events_total.append(backend.add_task.check_database(username)) 
-    #     events_total = sum([event.get("events3") for event in events_total], [])
-    #     best_time = backend.add_task.determine_best_time([{"name":task_name, "duration":float(duration)}], username, events_total)[0].get("best_time")
-
-    #     recipient_usernames = [[user["username"]  for user in pages.login.users if user['email']==recipient.value][0] for recipient in recipients]
-    #     custom_uuid = str(uuid.uuid4())
-    #     for recipient_username in recipient_usernames:
-    #         backend.send_notification.sendNotification(username, recipient_username, task_name, duration, recipient_usernames, custom_uuid, best_time.get("start"), best_time.get("end")) # sender: str, recipient: str, message, duration, start_time=None, finish_time=None
-
-    #     backend.checkRequest.addRequest(best_time.get("start"), best_time.get("end"), task_name, recipient_usernames, username, custom_uuid)
-    #     print("Sent request with id ", custom_uuid)
-    #     ui.notify("Task shared successfully", color="positive")
+   
 
 
 
