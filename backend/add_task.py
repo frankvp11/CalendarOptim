@@ -195,7 +195,6 @@ os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "accountkey.json"
 
 def get_or_create_user_event(user, start, end, summary, existing_events, regular_event=True):
     # user = User.collection.get(username)
-    print(user)
     event_identifier = f"{start}-{end}-{summary}"
 
     # Check if the event exists in the user's events
@@ -323,7 +322,6 @@ def determine_best_time(tasks: list[dict], username, extra_tasks=[]):
     events = [(e.start.astimezone(pytz.timezone("America/Toronto")), e.end.astimezone(pytz.timezone("America/Toronto"))) for e in events_today]
     for task in extra_tasks:
         events.append((parse(task.get("start")).astimezone(pytz.timezone("America/Toronto")), parse(task.get("end")).astimezone(pytz.timezone("America/Toronto"))))
-
     day_start = datetime.datetime.now().replace(hour=5, minute=0).replace(tzinfo=pytz.timezone('America/Toronto'))
     day_end = datetime.datetime.now().replace(hour=22, minute=0).replace(tzinfo=pytz.timezone('America/Toronto'))
     scheduler = Scheduler(events, tasks)

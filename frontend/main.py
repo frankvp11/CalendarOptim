@@ -113,7 +113,7 @@ def update_calendar():
 
 
         print("Updating Calendar!")
-        stuff=  backend.add_task.check_database("frank")
+        stuff=  backend.add_task.check_database(pages.user.about()['email'])
                 
         stuff = stuff.get("events3")
         pages.globalState.events = stuff
@@ -172,13 +172,14 @@ async def main():
         
 
         with ui.column():
-                ui.label("Hello frank")
                 with ui.row():
-                    ui.button("Add Task", on_click=lambda x: showAddTask2.add(username="frank"))
+                    ui.button("Add Task", on_click=lambda x: showAddTask2.add(username=pages.user.about()['email']))
                 with ui.row():
-                    ui.button("View Stats", on_click=lambda x: viewStats.add(username="frank"))
+                    ui.button("View Stats", on_click=lambda x: viewStats.add(username=pages.user.about()['email']))
                 with ui.row():
-                     ui.button("Clcik me", on_click=(update_calendar))
+                     url = ui.input("Enter URL")
+                with ui.row():
+                     ui.button("Add", on_click=lambda x: backend.add_task.get_events(url.value, pages.user.about()['email']))
 
 
 @pages.user.page('/async')

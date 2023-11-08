@@ -1,14 +1,13 @@
 
 
 from nicegui import ui, app
-from . import sidebar
 import fastapi
 import sys
 sys.path.append("/home/frankvp11/Documents/CalendarAI/CalendarProj/")
 sys.path.append("/home/frankvp11/Documents/CalendarAI/CalendarProj/backend/")
 from dateutil.parser import parse
 import pages.globalState
-import pages.addTasks
+# import pages.addTasks
 import backend.get_notifications
 import backend.save_task
 import backend.remove_notifications
@@ -19,7 +18,7 @@ logout_menu = None
 notification_menu = None
 username = None
 notification_button = None
-import pages.login
+# import pages.login
 import main
 
 def close_menus():
@@ -74,6 +73,7 @@ def view_calendar_change(start_time, finish_time, summary, noti_id):
             ui.button("Close", on_click=card_element.delete)
             ui.button("Accept invitation", on_click=lambda : (run_updates(noti_id, 1)))
             ui.button("Reject invitation", on_click=lambda : (run_updates(noti_id, 2)))
+
 def update_notification_menu(username, notification):
      global notification_menu, notification_button
      backend.remove_notifications.remove_notification_by_id(username, notification)
@@ -141,15 +141,10 @@ def add(page: str="main"):
     ''')
 
     global username, notification_button
-    # username = pages.login.session_info.get(str(request.session.get("id")), {}).get("username")
-    username = "frank"
+    username = pages.user.about()['email']
     notifications = backend.get_notifications.getNotifications(username)#.get("notifications")
     amount_of_notifications = len(notifications.get("notifications")) if notifications.get("notifications") else 0
-    # left_drawer = sidebar.add(page)
     with ui.header() as header:
-        # ui.button(
-        #         icon="menu", on_click=lambda: left_drawer.toggle(), color=None
-        #     ).props("flat").style("color: white; padding-top: 0.5%; padding-right: -2%;")
         ui.label("Calendar AI").style("color: white; font-size: 20px; margin-left: 10px;")
     
         with ui.row().style("position: absolute; right: 5%;"):

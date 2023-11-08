@@ -18,6 +18,8 @@ def sendNotification(sender: str, recipient: str, message, duration, recipient_l
     if not user:
         print("Recipient user not found.")
         return
+    if not user.notifications:
+        user.notifications = []
 
     # Create a new notification object
     notif = Notification()

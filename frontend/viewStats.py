@@ -7,11 +7,7 @@ sys.path.append("/home/frankvp11/Documents/CalendarAI/CalendarProj/backend/")
 import backend.get_stats
 
 def add(username):
-
-
     stats = []
-
-
     with ui.menu().style("width: 95%; height:100%;"):
         ui.button("Update stats", on_click=lambda: (update_stats(), ui.notify("Stats updated", color="positive")))
         stats = backend.get_stats.getStats(username)

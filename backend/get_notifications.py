@@ -13,7 +13,8 @@ def getNotifications(username: str):
     user = User.collection.get(username)
     if not user:
         return {"error": "User not found"}
-    
+    if not user.notifications:
+        user.notifications = []
     # notifications = [notif.to_dict() for notif in Notification.collection.all() if notif.user == user]
     notifications = [notif.to_dict() for notif in user.notifications]
 

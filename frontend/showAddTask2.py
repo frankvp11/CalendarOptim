@@ -8,7 +8,7 @@ sys.path.append("/home/frankvp11/Documents/CalendarAI/CalendarProj/backend/")
 import backend.add_task
 import backend.send_notification
 import backend.checkRequest
-import pages.login
+# import pages.login
 import uuid
 import fastapi
 import main
@@ -29,7 +29,8 @@ def add_task(username):
     best_time = {"start":start_date, "end":end_date}
     list_of_people = [person for (person, checkbox) in zip(share_with_people, check_box_values) if checkbox.value]
     print(best_time)
-    recipient_usernames = [[user["username"]  for user in pages.login.users if user['email']==recipient][0] for recipient in list_of_people]
+    recipient_usernames = list_of_people
+    # recipient_usernames = [[user["username"]  for user in pages.login.users if user['email']==recipient][0] for recipient in list_of_people]
     custom_uuid = str(uuid.uuid4())
     for recipient_username in recipient_usernames:
         backend.send_notification.sendNotification(username, recipient_username, task_name.value, task_duration.value, recipient_usernames, custom_uuid, best_time.get("start"), best_time.get("end")) # sender: str, recipient: str, message, duration, start_time=None, finish_time=None
@@ -122,12 +123,15 @@ def choose_time():
 
         ui.button("Save", on_click=lambda x: save_user_made_date())
 
+import pages.user
+
 
 def determine_time(username):
     global share_with_people, check_box_values, task_duration, task_name, start_date, end_date
     list_of_people = [person for (person, checkbox) in zip(share_with_people, check_box_values) if checkbox.value]
+    print(list_of_people)
     events_total = [backend.add_task.check_database(user) for user in list_of_people]
-    events_total.append(backend.add_task.check_database(username))
+    events_total.append(backend.add_task.check_database(pages.user.about()['email']))
     events_total = sum([event.get("events3") for event in events_total], [])
     best_time = backend.add_task.determine_best_time([{"name":task_name.value, "duration":float(task_duration.value)}], username, events_total)[0].get("best_time")
     print(best_time)
