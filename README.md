@@ -9,9 +9,50 @@ Currently Accomplished:
 
 
 To Do:
-1) Make the UI prettier (all pages). 
-2) Fix the button clicking for Logout and notification - should be like the sidebar
-3) Clear junk from the database (possibly just delete all them re-build it)
-4) Refactor the code - both front and backend
-5) Add some safety catches - specifically for the Notifications database, as it appears when you delete it, all hell breaks loose
-6) Make a video for this app so far
+1) Make it show some graphs for the tasks completed - that could be quite interesting.
+2) Make an agent - this should use the join link thing in the database and update the database. We should have 1 year worth of data -> 6 months previous and 6 months in advance
+3) Make it so that the user can click on the events
+4) Make a video for this app so far
+
+
+
+To Do (specific):
+
+1) Add Tasks
+    1. Look into the time stuff and make sure it all adds up
+    2. Look further into the algorithm - it should be +2 days (in the morning)
+
+2) Stats
+    1. Make a graph that can show you have many stats you've done every day (along with a database for this)
+    2. Add a way to track them, and whatnot
+
+3) Agent
+    1. Make an agent in the backend that ensures every user always has a year of data, from their given database file
+    2. Make an agent that can email a person about updates / notifications
+
+4) Misc.
+   1. Make it so that the user can delete from the calendar itself
+   2. If the user deletes and there are people shared in that event, make it so that it notifies the other people
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

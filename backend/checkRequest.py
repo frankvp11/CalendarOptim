@@ -39,14 +39,11 @@ def retrieve(custom_uuid):
     try:
         task_status = TaskStatus.collection.get(custom_uuid)
         if task_status:
-            print(f"Successfully retrieved TaskStatus with UUID: {custom_uuid}")
             print(task_status.to_dict())
             return task_status
         else:
-            print(f"No TaskStatus found with UUID: {custom_uuid}")
             return None
     except Exception as e:
-        print(f"Error retrieving TaskStatus: {e}")
         return None
 
      
@@ -63,7 +60,6 @@ def deleteTaskRequest(task, person, custom_uuid):
         
         # Save the user document back to Firestore
         user.save()
-        print(f"Notification with UUID {custom_uuid} deleted.")
     else:
         print("Notification not found for person", person)
 
@@ -76,7 +72,6 @@ def deleteTaskStatus(custom_uuid):
         # task_to_delete = TaskStatus.collection.get(custom_uuid)
         # if task_to_delete:
             TaskStatus.collection.delete(f"task_status/" +custom_uuid)
-            print("Deleted task with uuid ", custom_uuid)
         # else:
             # print(f"Task with UUID {custom_uuid} not found!")
     except Exception as e:
@@ -107,7 +102,6 @@ def return_notifications(username, status, custom_uuid): # sender: str, recipien
         # Create a new list excluding the notification with the specified custom_uuid
         sendee = [notification for notification in user.notifications if notification.id == custom_uuid][0]#.sender
 
-    print("Returning notifications to say that I accepted/rejected")
     if status == 1:
         message = f"{username} has accepted your invitation to {sendee.message}"
     else:
@@ -128,11 +122,9 @@ def updateStatus(custom_uuid, person, status):
             task = t
 
     if not task:  # If the task with the specified ID is not found
-        print("Task not found!")
         return {"error": "Task not found"}
 
     if (sum(value == 1 for value in task.people_status.values()) == len(task.people_status)-1):
-        print("Everyone accepted")
 
         return_notifications(person,   status, custom_uuid)
 
@@ -148,7 +140,6 @@ def updateStatus(custom_uuid, person, status):
         return True
     # Update the person's status in the task
     elif sum(value  for value in task.people_status.values()) == ((len(task.people_status) * 2) -3):
-        print("Everyone rejected")
         deleteTaskStatus(custom_uuid)
         return_notifications(person, status, custom_uuid)
 

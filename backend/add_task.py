@@ -274,7 +274,7 @@ async def get_events(url: str, username, duration: str = "monthly"):
 
 
 
-# @app.get("/checkDatabase")
+
 def check_database(username:str):
     
     today = datetime.datetime.now(pytz.timezone('America/Toronto')).date() - datetime.timedelta(days=35)

@@ -41,6 +41,14 @@ async def logout() -> None:
         ui.notify('Logout failed', type='negative')
     ui.open(page.LOGIN_PATH)
 
+from . import globalState
+import sys
+sys.path.append("/home/frankvp11/Documents/CalendarAI/CalendarProj/")
+sys.path.append("/home/frankvp11/Documents/CalendarAI/CalendarProj/backend/")
+import backend.add_task
+
+def temp_function():
+    print("hello!")
 
 class page(ui.page):
     """A page that requires the user to be logged in.
@@ -55,34 +63,10 @@ class page(ui.page):
 
     def __call__(self, func: Callable[..., Any]) -> Callable[..., Any]:
         async def content(client: Client):
+            # if await self._is_logged_in():
+                # globalState.events = backend.add_task.check_database(about()['email']).get("events3")
             ui.add_head_html('<script src="https://unpkg.com/@descope/web-component@latest/dist/index.js"></script>')
-            ui.add_head_html('''
-                <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.9/main.min.css' rel='stylesheet' />
-                <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.9/index.global.min.js'></script>
-                <script>
-                    document.addEventListener('DOMContentLoaded', function() {
-                        renderFullCalendar("my-calendar", eventsData);
-                    });
-
-                    function renderFullCalendar(elementId, events) {
-                        var calendarEl = document.querySelector('.' + elementId);
-
-                        if (calendarEl) {
-                            window.calendarInstance = new FullCalendar.Calendar(calendarEl, {
-                                initialView: 'timeGridWeek',
-                                slotMinTime: "05:00:00",
-                                slotMaxTime: "22:00:00",
-                                allDaySlot: false,
-                                timeZone: 'local',
-                                height: 'auto',
-                                events: events
-                            });
-
-                            window.calendarInstance.render();
-                        }
-                    }
-                </script>
-            ''')
+            
 
             ui.add_head_html('<script src="https://unpkg.com/@descope/web-js-sdk@latest/dist/index.umd.js"></script>')
             ui.add_body_html(f'''
