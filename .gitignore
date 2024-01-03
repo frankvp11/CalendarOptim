@@ -6,3 +6,6 @@ __pycache__
 backend/model/__pycache__/event.cpython-310.pyc
 backend/model/__pycache__/stat.cpython-310.pyc
 .gitignore
+.nicegui/storage_user_c7d84ed1-8582-4a88-bf7d-1e5d57dd29eb.json
+.nicegui/storage_user_eb4b2ee0-438e-4798-bc07-3c4295142781.json
+frontend/components/__pycache__/header.cpython-310.pyc

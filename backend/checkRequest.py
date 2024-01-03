@@ -123,8 +123,13 @@ def updateStatus(custom_uuid, person, status):
 
     if not task:  # If the task with the specified ID is not found
         return {"error": "Task not found"}
+    # for value in task.people_status.values():
+        # print(value)
+    print("Values")
+    print(task.people_status)
+    task.people_status[person] = status
 
-    if (sum(value == 1 for value in task.people_status.values()) == len(task.people_status)-1):
+    if (sum(value == 1 for value in task.people_status.values()) == len(task.people_status)):
 
         return_notifications(person,   status, custom_uuid)
 
@@ -138,8 +143,9 @@ def updateStatus(custom_uuid, person, status):
         deleteTaskStatus(custom_uuid)
 
         return True
+    
     # Update the person's status in the task
-    elif sum(value  for value in task.people_status.values()) == ((len(task.people_status) * 2) -3):
+    elif sum(value==2  for value in task.people_status.values()) != 0:
         deleteTaskStatus(custom_uuid)
         return_notifications(person, status, custom_uuid)
 
